@@ -13,10 +13,16 @@ int main(int argc, const char* argv[]) {
     const std::string user_file = argv[2];
     const std::string assistant_file = argv[3];
 
-    std::string api_key = std::string("Bearer ") + std::getenv("API_KEY");
+    const char* key = std::getenv("API_KEY");
+    if ( key == nullptr) {
+        std::cout << "Can't get API_KEY enviroment." << std::endl;
+        return -1;
+    }
+    std::string api_key = std::string("Bearer ") + key;
 
     httplib::SSLClient cli("api.moonshot.cn");
     cli.enable_server_certificate_verification(false);
+    cli.set_read_timeout(120, 0);
 
     httplib::Headers info;
     info.emplace("Authorization", api_key);
@@ -58,6 +64,8 @@ int main(int argc, const char* argv[]) {
             std::ofstream oof(assistant_file);
             oof << rdata["choices"][0]["message"]["content"].get<std::string>();
         }
+    } else {
+        std::cout << res.error() << std::endl;
     }
 }
 
