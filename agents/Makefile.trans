@@ -1,0 +1,50 @@
+CHAT := ../tools/kimi_chat
+
+
+define MESSAGES_INIT
+[
+	{"role": "system", "content": "你现在是一名专业的、严谨的、偏学术风格的翻译工作者，接下来需要完成一些中文到英文，或者英文到中文的翻译的任务。"}
+]
+endef
+export MESSAGES_INIT
+
+define FIRST_TRANS
+请翻译下面这段中文到英文，翻译的内容使用 JSON 格式，使用字段 'trans' 。
+
+
+endef
+export FIRST_TRANS
+
+define REFRECT_TRANS
+从专业角度，流畅角度，对这一段翻译进行评价。
+endef
+export REFRECT_TRANS
+
+define IMPROVE_TRANS
+根据第一遍翻译，以及评价，给出一个改进版本的翻译，输出使用 JSON 格式。
+endef
+export IMPROVE_TRANS
+
+
+first:
+	@echo "$$MESSAGES_INIT" > h.json
+	@echo "$$FIRST_TRANS" $(SOURCE) > u.txt
+	$(CHAT) h.json u.txt a.txt h.json first.json
+
+reflect: first
+	@echo "$$REFRECT_TRANS" > u.txt
+	$(CHAT) h.json u.txt a.txt h.json
+
+improve: reflect
+	@echo "$$IMPROVE_TRANS" > u.txt
+	$(CHAT) h.json u.txt a.txt h.json improve.json
+
+all: improve
+	@echo "翻译结束，参考 improve.json 文件"
+	@echo "原文如下：" $(SOURCE)
+	@echo "译文如下:"
+	@cat improve.json
+	@echo 
+
+clean:
+	rm -f *.txt *.json
