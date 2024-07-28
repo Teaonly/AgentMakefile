@@ -1,4 +1,4 @@
-CHAT := ../chat/kimi_chat
+CHAT := ../tools/kimi_chat
 
 define MESSAGES_INIT
 [
