@@ -1,0 +1,79 @@
+CHAT := ../chat/kimi_chat
+
+define MESSAGES_INIT
+[
+	{"role": "system", "content": "你是一个专业的助手! 你现在是一名教《计算机组成基础》的大学教师，面向的学生是二本大学计算系本科，课程涵盖《计算机组成》的基础内容。你现在需要根据用户的需求，出一套考试试卷。"}
+]
+endef
+export MESSAGES_INIT
+
+define EASY_CHOICE
+请先设计10道单选题，考察的知识点不要重复，稍微容易点。以 JSON 数组格式输出，'problem' 字段表示题目以及A B C D 选项，'answer' 字段表示答案。
+请开始出题吧！
+endef
+export EASY_CHOICE
+
+define HARD_CHOICE
+在前面10道题的基础上，再出5道略微难一点的单选题，保持 JSON 格式输出。
+endef
+export HARD_CHOICE
+
+define NORM_JUDGE
+出10道判断题，保持 JSON 格式输出，因为是判断题，所以不需要选项。注意考察的知识点不要重复，跟前面的考察点有些差异。
+endef
+export NORM_JUDGE
+
+define NORM_FILL
+出5道填空，保持 JSON 格式输出，填空题只需要一个空白。注意考察的知识点不要重复,跟前面的考察点有些差异。
+endef
+export NORM_FILL
+
+define NORM_QA
+出3道问答题，保持 JSON 格式输出，内容可以包含基本计算，也可以包含概念说明，给出一个简单参考答案。
+endef
+export NORM_QA
+
+# 容易部分的选择题
+easy_choice.json:
+	@echo "$$MESSAGES_INIT" > h.json
+	@echo "$$EASY_CHOICE" > u.txt
+	$(CHAT) h.json u.txt a.txt h.json easy_choice.json
+	@rm u.txt a.txt
+
+# 难一点的选择题
+hard_choice.json: easy_choice.json
+	@echo "$$HARD_CHOICE" > u.txt
+	$(CHAT) h.json u.txt a.txt h.json hard_choice.json
+	@rm u.txt a.txt
+
+# 判断题  
+judge.json: hard_choice.json
+	@echo "$$NORM_JUDGE" > u.txt
+	$(CHAT) h.json u.txt a.txt h.json judge.json
+	@rm u.txt a.txt
+
+# 填空题  
+fill.json: judge.json
+	@echo "$$MESSAGES_INIT" > h.json
+	@echo "$$NORM_FILL" > u.txt
+	$(CHAT) h.json u.txt a.txt h.json fill.json
+	@rm u.txt a.txt
+
+# 问答题  
+qa.json: fill.json
+	@echo "$$MESSAGES_INIT" > h.json
+	@echo "$$NORM_QA" > u.txt
+	$(CHAT) h.json u.txt a.txt h.json qa.json
+	@rm u.txt a.txt
+
+all: qa.json 
+	@rm -f h.json u.txt a.txt
+	@echo "1-10 容易的选择题 -> easy_choice.json"
+	@echo "11-15 较难的选择题 -> hard_choice.json"
+	@echo "1-10 判断题 -> judge.json"
+	@echo "1-5 填空题 -> fill.json"
+	@echo "1-3 问答题 -> qa.json"
+	@echo " ############ DONE ############ "
+
+clean:
+	rm -f *.json *.txt
