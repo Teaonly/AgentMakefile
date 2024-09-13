@@ -7,16 +7,17 @@ using json = nlohmann::json;
 
 
 int main(int argc, const char* argv[]) {
-    if ( argc < 5 ) {
-        std::cout << "./chat history.json user.txt assistant.txt new_history.json [output.json]" << std::endl;
+    if ( argc < 6 ) {
+        std::cout << "./chat model_name history.json user.txt assistant.txt new_history.json [output.json]" << std::endl;
         return -1;
     }
 
-    const std::string history_file = argv[1];
-    const std::string user_file = argv[2];
-    const std::string assistant_file = argv[3];
-    const std::string _history_file = argv[4];
-    const std::string json_file = argc >= 6 ? argv[5] : "";
+    const std::string model = argv[1];
+    const std::string history_file = argv[2];
+    const std::string user_file = argv[3];
+    const std::string assistant_file = argv[4];
+    const std::string _history_file = argv[5];
+    const std::string json_file = argc >= 7 ? argv[6] : "";
 
     const char* key = std::getenv("SIFLOW_API_KEY");
     if ( key == nullptr) {
@@ -31,12 +32,10 @@ int main(int argc, const char* argv[]) {
 
     httplib::Headers info;
     info.emplace("Authorization", api_key);
-    if ( json_file == "" ) {
-        info.emplace("accept", "application/json");
-    }
+    info.emplace("accept", "application/json");
 
     json data;
-    data["model"] = "deepseek-ai/DeepSeek-V2-Chat";
+    data["model"] = model;
     data["temperature"] = 0.3;
 
     json messages;

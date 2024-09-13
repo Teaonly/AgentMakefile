@@ -1,4 +1,4 @@
-CHAT := ../tools/kimi_chat
+CHAT := ../tools/siflow_chat Qwen/Qwen2-72B-Instruct 
 
 
 define MESSAGES_INIT
