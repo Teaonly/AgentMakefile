@@ -18,28 +18,26 @@ int main(int argc, const char* argv[]) {
     const std::string _history_file = argv[4];
     const std::string json_file = argc >= 6 ? argv[5] : "";
 
-    const char* key = std::getenv("KIMI_API_KEY");
+    const char* key = std::getenv("SIFLOW_API_KEY");
     if ( key == nullptr) {
-        std::cout << "Can't get API_KEY enviroment." << std::endl;
+        std::cout << "Can't get SIFLOW_API_KEY enviroment." << std::endl;
         return -1;
     }
     std::string api_key = std::string("Bearer ") + key;
 
-    httplib::SSLClient cli("api.moonshot.cn");
+    httplib::SSLClient cli("api.siliconflow.cn");
     cli.enable_server_certificate_verification(false);
     cli.set_read_timeout(300, 0);
 
     httplib::Headers info;
     info.emplace("Authorization", api_key);
+    if ( json_file == "" ) {
+        info.emplace("accept", "application/json");
+    }
 
     json data;
-    data["model"] = "moonshot-v1-8k";
+    data["model"] = "deepseek-ai/DeepSeek-V2-Chat";
     data["temperature"] = 0.3;
-    if ( json_file == "" ) {
-        json format;
-        format["type"] = "json_object";
-        data["response_format"] = format;
-    }
 
     json messages;
     {
@@ -78,6 +76,7 @@ int main(int argc, const char* argv[]) {
             std::ofstream oof(assistant_file);
             oof << rdata["choices"][0]["message"]["content"].get<std::string>();
         }
+
         // parsing JSON
         if ( json_file != "") {
             std::string c = rdata["choices"][0]["message"]["content"].get<std::string>();

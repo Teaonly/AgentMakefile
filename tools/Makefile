@@ -4,10 +4,13 @@ FLAGS = -Wall -O3
 INC = 
 LINK = -lssl -lcrypto 
 
-all: kimi_chat 
+all: siflow_chat kimi_chat 
 
 kimi_chat: kimi_chat.cpp
 	g++ $(FLAGS) -o $@ $< $(INC) $(LINK)
 
+siflow_chat: siflow_chat.cpp
+	g++ $(FLAGS) -o $@ $< $(INC) $(LINK)
+
 clean:
-	rm -f kimi_chat 
+	rm -f kimi_chat siflow_chat  
