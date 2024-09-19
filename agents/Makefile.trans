@@ -1,49 +1,73 @@
+.DEFAULT_GOAL = help
+
 CHAT := ../tools/siflow_chat Qwen/Qwen2-72B-Instruct 
+JSON := python3 ../tools/jsond.py
 
+_DIR_ := ./out
+$(shell mkdir -p $(_DIR_))
 
+## 初始定义
 define MESSAGES_INIT
 [
-	{"role": "system", "content": "你现在是一名专业的、严谨的、偏学术风格的翻译工作者，接下来需要完成一些中文到英文，或者英文到中文的翻译的任务。"}
+	{"role": "system", "content": "你现在是一名富有经验的英语专家，擅长中英翻译，英语写作等工作。"}
 ]
 endef
 export MESSAGES_INIT
 
-define FIRST_TRANS
-请翻译下面这段中文到英文，翻译的内容使用 JSON 格式，使用字段 'trans' 。
+## 定义英翻中的提示词
+define TRANS_ZH
+请将下面这段英文翻译为中文，果遇到的输入不是英文，请输出：'请输入中文'。输出格式使用 JSON 格式，结果放在'result'字段。
+比如：
+'''
+[输入]： Hello world
+[输出]： {'result': '你好，世界'}
+'''
 
 endef
-export FIRST_TRANS
+export TRANS_ZH
 
-define REFRECT_TRANS
-从专业角度，流畅角度，对这一段翻译进行评价。
+## 定义中翻英的提示词
+define TRANS_ENG
+请将下面这段中文翻译为英语，果遇到的输入不是中文，请输出：'Please input Chinese'。输出格式使用 JSON 格式，结果放在'result'字段。
+比如：
+'''
+[输入]： 你好，世界
+[输出]： {'result': 'hello world'}
+'''
+
+
 endef
-export REFRECT_TRANS
+export TRANS_ENG
 
-define IMPROVE_TRANS
-根据第一遍翻译，以及评价，给出一个改进版本的翻译，输出使用 JSON 格式。
-endef
-export IMPROVE_TRANS
+help:
+	@echo "请使用下面的命令，进行操作:"
+	@echo "zh: 英翻中"
+	@echo "eng: 中翻英"
+	@echo "fix_gram: 修正英语语法错误"
+	@echo "make_pro: 用专业的风格改进英语"
+	@echo "make_simp: 用简单的语法修改英语"
 
+.PHONY: zh
+.ONESHELL: zh
+zh:
+	@echo "请输出你要翻译的英文，回车结束。"
+	read SOURCE_WORDS
+	if [ -z "$${SOURCE_WORDS}" ]; then echo "输入错误"; exit ; fi
+	echo "$$MESSAGES_INIT" > $(_DIR_)/h.json
+	echo "$$TRANS_ZH" $$SOURCE_WORDS > $(_DIR_)/u.txt
+	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json $(_DIR_)/first.json
+	$(JSON) $(_DIR_)/first.json '["result"]' > $(_DIR_)/v.txt
+	cat $(_DIR_)/v.txt
 
-first:
-	@echo "$$MESSAGES_INIT" > h.json
-	@echo "$$FIRST_TRANS" $(SOURCE) > u.txt
-	$(CHAT) h.json u.txt a.txt h.json first.json
+.PHONY: eng
+.ONESHELL: eng
+eng:
+	@echo "Please input Chinese ends with enter."
+	read SOURCE_WORDS
+	if [ -z "$${SOURCE_WORDS}" ]; then echo "Input Error"; exit ; fi
+	echo "$$MESSAGES_INIT" > $(_DIR_)/h.json
+	echo "$$TRANS_ENG" $$SOURCE_WORDS > $(_DIR_)/u.txt
+	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json $(_DIR_)/first.json
+	$(JSON) $(_DIR_)/first.json '["result"]' > $(_DIR_)/v.txt
+	cat $(_DIR_)/v.txt
 
-reflect: first
-	@echo "$$REFRECT_TRANS" > u.txt
-	$(CHAT) h.json u.txt a.txt h.json
-
-improve: reflect
-	@echo "$$IMPROVE_TRANS" > u.txt
-	$(CHAT) h.json u.txt a.txt h.json improve.json
-
-all: improve
-	@echo "翻译结束，参考 improve.json 文件"
-	@echo "原文如下：" $(SOURCE)
-	@echo "译文如下:"
-	@cat improve.json
-	@echo 
-
-clean:
-	rm -f *.txt *.json
