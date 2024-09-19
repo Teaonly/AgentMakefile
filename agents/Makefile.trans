@@ -39,6 +39,60 @@ define TRANS_ENG
 endef
 export TRANS_ENG
 
+
+## 定义英语改进的提示词
+define FIX_GRAM
+对用户提供的英文进行语法改进，修正输出单词拼写错误，语法错误，比如定冠词、时态等等，如果遇到的输入不是英文，请输出：'请输入中文'。输出格式使用 JSON 格式，结果放在'result'字段，修改原因放在'improved'字段。
+比如：
+'''
+[输入]： Look under  hood at the tech stack that power multmodal AI 
+[输出]： {'result': 'Looking under the hood at the tech stack that powers multimodal AI', 'improved': 'Look 应该修改为ing形式，起到名词的作用，multmodal 应该为 multimodal 拼写错误'}
+'''
+再比如：
+'''
+[输入]： Hello world in the blue sky. 
+[输出]： {'result': 'Hello world in the blue sky.', 'improved': '这句话没有明显的语法错误'}
+'''
+
+用户提供的英文如下：
+
+endef
+export FIX_GRAM
+
+## 定义英语专业化的提示词
+define MAKE_PRO
+对用户提供的英文，从专业角度，从书面语角度，改进输出修改的句子。如果遇到的输入不是英文，请输出：'请输入中文'。输出格式使用 JSON 格式，结果放在'result'字段。
+比如：
+'''
+[输入]： I realized I have never deleted an issue I started but doesn't people with admin access the only with ability to delete the issues on a repo? 
+[输出]： {'result': 'I've realized that I’ve never deleted an issue I opened. However, isn't the ability to delete issues on a repository restricted to users with admin access?'}
+'''
+再比如：
+'''
+[输入]： About an hour after the email, I checked and it was gone. 
+[输出]： {'result': 'Approximately an hour after receiving the email, I checked, and it was no longer there.'}
+'''
+
+用户提供的英文如下：
+
+endef
+export MAKE_PRO
+
+## 定义英语简化化的提示词
+define MAKE_SIMP
+对用户提供的英文，进行简短的改写，降低语句长度，简化使用的语法，可以使用口语风格。如果遇到的输入不是英文，请输出：'请输入中文'。输出格式使用 JSON 格式，结果放在'result'字段。
+比如：
+'''
+[输入]： He explains to me what they're trying to accomplish.
+[输出]： {'result': 'He tell to me what they're doing.'}
+'''
+
+用户提供的英文如下：
+
+endef
+export MAKE_SIMP
+
+
 help:
 	@echo "请使用下面的命令，进行操作:"
 	@echo "zh: 英翻中"
@@ -57,6 +111,7 @@ zh:
 	echo "$$TRANS_ZH" $$SOURCE_WORDS > $(_DIR_)/u.txt
 	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json $(_DIR_)/first.json
 	$(JSON) $(_DIR_)/first.json '["result"]' > $(_DIR_)/v.txt
+	printf "\n翻译结果如下：\n"
 	cat $(_DIR_)/v.txt
 
 .PHONY: eng
@@ -69,5 +124,48 @@ eng:
 	echo "$$TRANS_ENG" $$SOURCE_WORDS > $(_DIR_)/u.txt
 	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json $(_DIR_)/first.json
 	$(JSON) $(_DIR_)/first.json '["result"]' > $(_DIR_)/v.txt
+	printf "\nTranslate result:\n"
+	cat $(_DIR_)/v.txt
+
+.PHONY: fix_gram
+.ONESHELL: fix_gram
+fix_gram:
+	@echo "请输出你要修改的英文，回车结束。"
+	read SOURCE_WORDS
+	if [ -z "$${SOURCE_WORDS}" ]; then echo "输入错误"; exit ; fi
+	echo "$$MESSAGES_INIT" > $(_DIR_)/h.json
+	echo "$$FIX_GRAM" $$SOURCE_WORDS > $(_DIR_)/u.txt
+	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json $(_DIR_)/first.json
+	$(JSON) $(_DIR_)/first.json '["result"]' > $(_DIR_)/v.txt
+	printf "\n修改结果如下:\n"
+	cat $(_DIR_)/v.txt
+	$(JSON) $(_DIR_)/first.json '["improved"]' > $(_DIR_)/v.txt
+	printf "\n修改原因如下:\n"
+	cat $(_DIR_)/v.txt
+
+.PHONY: make_pro
+.ONESHELL: make_pro
+make_pro:
+	@echo "请输出你要改进的英文，回车结束。"
+	read SOURCE_WORDS
+	if [ -z "$${SOURCE_WORDS}" ]; then echo "输入错误"; exit ; fi
+	echo "$$MESSAGES_INIT" > $(_DIR_)/h.json
+	echo "$$MAKE_PRO" $$SOURCE_WORDS > $(_DIR_)/u.txt
+	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json $(_DIR_)/first.json
+	$(JSON) $(_DIR_)/first.json '["result"]' > $(_DIR_)/v.txt
+	printf "\n修改结果如下:\n"
+	cat $(_DIR_)/v.txt
+
+.PHONY: make_simp
+.ONESHELL: make_simp
+make_simp:
+	@echo "请输出你要简化的英文，回车结束。"
+	read SOURCE_WORDS
+	if [ -z "$${SOURCE_WORDS}" ]; then echo "输入错误"; exit ; fi
+	echo "$$MESSAGES_INIT" > $(_DIR_)/h.json
+	echo "$$MAKE_SIMP" $$SOURCE_WORDS > $(_DIR_)/u.txt
+	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json $(_DIR_)/first.json
+	$(JSON) $(_DIR_)/first.json '["result"]' > $(_DIR_)/v.txt
+	printf "\n修改结果如下:\n"
 	cat $(_DIR_)/v.txt
 
