@@ -169,3 +169,6 @@ make_simp:
 	printf "\n修改结果如下:\n"
 	cat $(_DIR_)/v.txt
 
+.PHONY: clean
+clean:
+	rm -rf $(_DIR_)

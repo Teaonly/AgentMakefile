@@ -1,0 +1,82 @@
+.DEFAULT_GOAL = QA
+
+CHAT := ../tools/siflow_chat Qwen/Qwen2-72B-Instruct 
+JSON := python3 ../tools/jsond.py
+
+_DIR_ := ./out
+$(shell mkdir -p $(_DIR_))
+
+## 初始定义
+define MESSAGES_INIT
+[
+	{ "role": "system", 
+	  "content": "你现在是一名富有经验的计算机视觉，人工智能专家，你就职于宁波云锦微科技公司，你需要回答客户有关产品和技术的问题。"
+	}
+]
+endef
+export MESSAGES_INIT
+
+## 背景定义
+define CONTEXT
+
+下面这些内容是，相关的产品和技术内容：
+
+[产品介绍]
+- 产品名称：安防/工业AI智能体
+
+- 产品特色：
+是云锦微面向视觉AI应用推出的一款可以实现算法和场景100%适配的可编程边缘计算盒子。
+安防AI智能体内置30+AI预训练算法，赠送主动告警浏览器应用软件，用户最快可5min完成现场部署和现场查看。
+并赠送本地部署的PC算法训推一体软件，支持用户根据实际的管理规则，自主训练并加载对应的AI模型，并且用户可通过应用软件采集现场数据进行算法迭代，实现算法和场景的100%匹配，解决AI视觉项目售后困难的问题。
+云锦微安防AI智能体以硬件为载体，提供算法预训练模型、算法训推工具、场景适配、项目部署等AI场景项目落地全链路解决方案，打破行业困局！
+千元内即可实现AI智能化，本公司接受业内所有价格挑战，硬件超高性价比，软件完全免费，用户能以超低成本实现AI智能化。赠送单机及多机管理软件开箱即用，最快5min完成硬件部署。
+云锦微安防AI智能体内置告警浏览器，开箱即用，最快5min完成硬件部署，实现实时查看、告警状态记录和算法部署，且数据均在本地，保证数据安全。
+附赠VT-ClipVMS主动告警中控App，可管理多台安防AI智能体产品，满足绝大多数现场应用需求。
+提供简单易用的PC端训推一体软件VT-Station，软件已内置30+算法预训练模型。用户三步即可完成自主算法迭代，轻松解决项目落地后各类算法疑难杂症，售后无忧实现客户成功和项目复制。
+
+- 产品型号:
+CV-ZN16A 16路视觉边缘计算终端，单台可售
+CV-ZN04A 4路视觉边缘计算终端，业内超高性价比的边缘计算盒子
+
+[技术介绍]
+安防/工业AI智能体 采用目标检测、分割以及识别等计算机视觉AI技术为核心，支持各种安防、生产环境下的各种类型的目标检测、行为分析、场景监控等等，比如人员在岗、安全帽、车辆以及产线的缺陷检测等等。
+智能体中内置最新 SOTA 级别的计算机视觉算法，支持用户自定义检测识别类别，在 VT-Station 上训练和部署用户自己的模型。
+
+[算法核心]
+当前算法核心是 YOLOV8 系列的目标检测识别算法，我们通过 VT-Station 提供少样本识别的能力，全新的识别类别，目前需要 100 张以上，不能涵盖太多的重复样本。
+用户自己的训练的识别对象，需要具有显著的区分性，基本上保持普通人一眼能够进行区分。
+
+
+接下来请回答和咨询用户相关的问题。
+
+
+endef
+export CONTEXT 
+
+.PHONY: QA
+.ONESHELL: QA
+QA: 
+	@echo "客户您好，关于云锦OS的产品和技术问题，您可以提问！"
+	read -p "=> " QUESTION
+	if [ -z "$${QUESTION}" ]; then echo "谢谢！"; exit ; fi
+	echo "$$MESSAGES_INIT" > $(_DIR_)/h.json
+	echo "$$CONTEXT" $$QUESTION > $(_DIR_)/u.txt
+	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json
+	cat $(_DIR_)/a.txt
+	printf "\n"
+	@$(MAKE) -f Makefile.customer  QA_CONT
+
+.PHONY: QA_CONT
+.ONESHELL: QA_CONT
+QA_CONT: 
+	@read -p "=> " QUESTION
+	if [ -z "$${QUESTION}" ]; then echo "谢谢！"; exit ; fi
+	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json
+	cat $(_DIR_)/a.txt
+	printf "\n"
+	@$(MAKE) -f Makefile.customer  QA_CONT
+
+
+.PHONY: clean
+clean:
+	rm -rf $(_DIR_)
