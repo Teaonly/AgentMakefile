@@ -1,4 +1,6 @@
 CHAT := ../tools/kimi_chat
+_DIR_ := ./out
+$(shell mkdir -p $(_DIR_))
 
 define MESSAGES_INIT
 [
