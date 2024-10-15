@@ -49,9 +49,9 @@ endef
 export SYSTEM_MESSAGE
 
 .PHONY: QA
-.ONESHELL: QA
+.SILENT: QA_CONT
 QA: 
-	@echo "客户您好，我是云锦微在线客服阿锦，关于云锦OS的产品和技术问题，您可以提问！"
+	echo "客户您好，我是云锦微在线客服阿锦，关于云锦OS的产品和技术问题，您可以提问！"
 	read -p "=> " QUESTION
 	if [ -z "$${QUESTION}" ]; then echo "谢谢！"; exit ; fi
 	echo "$$SYSTEM_MESSAGE" > $(_DIR_)/h.json
@@ -64,9 +64,9 @@ QA:
 	@$(MAKE) -f Makefile.customer  QA_CONT
 
 .PHONY: QA_CONT
-.ONESHELL: QA_CONT
+.SILENT: QA_CONT
 QA_CONT: 
-	@read -p "=> " QUESTION
+	read -p "=> " QUESTION
 	if [ -z "$${QUESTION}" ]; then echo "谢谢！"; exit ; fi
 	echo  $$QUESTION > $(_DIR_)/u.txt
 	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json

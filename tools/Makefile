@@ -1,10 +1,10 @@
 .PHONY: all
 
 FLAGS = -Wall -O3 
-INC = 
+INC = -I.
 LINK = -lssl -lcrypto 
 
-all: siflow_chat kimi_chat system
+all: siflow_chat kimi_chat system web
 
 kimi_chat: kimi_chat.cpp
 	g++ $(FLAGS) -o $@ $< $(INC) $(LINK)
@@ -12,7 +12,7 @@ kimi_chat: kimi_chat.cpp
 siflow_chat: siflow_chat.cpp
 	g++ $(FLAGS) -o $@ $< $(INC) $(LINK)
 
-system: system.cpp
+web: web.cpp
 	g++ $(FLAGS) -o $@ $< $(INC) $(LINK)
 
 clean:
