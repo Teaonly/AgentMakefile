@@ -33,12 +33,14 @@ int main(int argc, const char* argv[] ) {
         while(1) {
             int len = read(fd[0], words, 1024);
             if ( len <= 0 ) {
+                std::cout << " >>>>>>>>> " << len << std::endl;
                 break;
             }
             words[len] = 0;
             std::cout << words;
             std::cout.flush();
         }
+    
     } else {
         close(fd[0]);
         dup2(fd[1], STDOUT_FILENO);
