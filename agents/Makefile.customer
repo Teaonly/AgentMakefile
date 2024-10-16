@@ -1,8 +1,8 @@
 .DEFAULT_GOAL = QA
 
 SYSTEM := ../tools/system
-CHAT := ../tools/siflow_chat Qwen/Qwen2-72B-Instruct 
-JSON := python3 ../tools/jsond.py
+CHAT := ../tools/siflow_chat Qwen/Qwen2-72B-Instruct
+READ := ../tools/read
 
 _DIR_ := ./out
 $(shell mkdir -p $(_DIR_))
@@ -49,16 +49,13 @@ endef
 export SYSTEM_MESSAGE
 
 .PHONY: QA
-.SILENT: QA_CONT
+.SILENT: QA
 QA: 
 	echo "客户您好，我是云锦微在线客服阿锦，关于云锦OS的产品和技术问题，您可以提问！"
-	read -p "=> " QUESTION
-	if [ -z "$${QUESTION}" ]; then echo "谢谢！"; exit ; fi
+	$(READ) "=> " $(_DIR_)/u.txt
 	echo "$$SYSTEM_MESSAGE" > $(_DIR_)/h.json
-	$(SYSTEM) $(_DIR_)/h.json $(_DIR_)/h.json
-	echo  $$QUESTION > $(_DIR_)/u.txt
+	$(CHAT) $(_DIR_)/h.json $(_DIR_)/h.json
 	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json
-	printf "\n阿锦:"
 	cat $(_DIR_)/a.txt
 	printf "\n"
 	@$(MAKE) -f Makefile.customer  QA_CONT
@@ -66,15 +63,11 @@ QA:
 .PHONY: QA_CONT
 .SILENT: QA_CONT
 QA_CONT: 
-	read -p "=> " QUESTION
-	if [ -z "$${QUESTION}" ]; then echo "谢谢！"; exit ; fi
-	echo  $$QUESTION > $(_DIR_)/u.txt
+	$(READ) "=> " $(_DIR_)/u.txt
 	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json
-	printf "\n阿锦:"
 	cat $(_DIR_)/a.txt
 	printf "\n"
 	@$(MAKE) -f Makefile.customer  QA_CONT
-
 
 .PHONY: clean
 clean:

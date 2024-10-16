@@ -1,28 +1,28 @@
 #include <unistd.h>
+#include <sstream>
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 #include "json.hpp"
 using json = nlohmann::json;
 
-int build_sytem(const char* txt, const char* json) {
-   std::ostringstream ss;
+int build_system(const char* txt, const char* out) {
+    std::ostringstream ss;
     {
         std::ifstream iif(txt);
         ss << iif.rdbuf();
     }
 
-    json system;
+    json sys;
     json role;
     role["role"] = "system";
     role["content"] = ss.str();
 
-    system.push_back(role);
-    std::ofstream oof(json);
-    oof << std::setw(4) << system.dump() << std::endl;
+    sys.push_back(role);
+    std::ofstream oof(out);
+    oof << std::setw(4) << sys.dump() << std::endl;
     return 0;
 }
-
 
 int main(int argc, const char* argv[]) {
     if ( argc == 4) {
