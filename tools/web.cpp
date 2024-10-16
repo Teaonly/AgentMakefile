@@ -29,14 +29,15 @@ int main(int argc, const char* argv[] ) {
    	if (fork() != 0) { // parent process
         close(fd[1]); // Close the write end of the pipe
 
-        unsigned char words[1024];
+        unsigned char words[4096];
         while(1) {
             int len = read(fd[0], words, 1024);
             if ( len <= 0 ) {
                 break;
             }
             words[len] = 0;
-            std::cout << words << std::endl;
+            std::cout << words;
+            std::cout.flush();
         }
     } else {
         close(fd[0]);
