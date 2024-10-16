@@ -28,19 +28,11 @@ int main(int argc, const char* argv[] ) {
 
    	if (fork() != 0) { // parent process
         close(fd[1]); // Close the write end of the pipe
+        
+        httplib::Server *svr_ = new httplib::Server();
+        svr_->set_mount_point("/", "../www");
 
-        unsigned char words[4096];
-        while(1) {
-            int len = read(fd[0], words, 1024);
-            if ( len <= 0 ) {
-                std::cout << " >>>>>>>>> " << len << std::endl;
-                break;
-            }
-            words[len] = 0;
-            std::cout << words;
-            std::cout.flush();
-        }
-    
+        svr_->listen("0.0.0.0", 8888);
     } else {
         close(fd[0]);
         dup2(fd[1], STDOUT_FILENO);
