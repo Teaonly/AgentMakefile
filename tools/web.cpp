@@ -64,8 +64,17 @@ struct AgentApplication {
                     body.append(data, data_length);
                     return true;
                 });
+            // empty input means end of chat
+            if ( body == "") {
+                body = "==USERBYE==\n";
+                write(ufd_, body.data(), body.size());
+                return;
+            }
             
-            std::cout << body << std::endl;
+            body = body + "\n";
+            write(ufd_, body.data(), body.size());
+            body = "==USEREND==\n";
+            write(ufd_, body.data(), body.size());
         });
         svr_->Post("/listen", [&](const httplib::Request &req, httplib::Response &res, const httplib::ContentReader &content_reader) {
             AgentState state;
@@ -118,7 +127,7 @@ struct AgentApplication {
                 std::lock_guard lk(mt_);
                 state_ = ST_RUNNING;
                 lines = "";
-            } else if (message.rfind("(=>", 0) == 0) {
+            } else if (message.rfind(")=>", 0) == 0) {
                 std::lock_guard lk(mt_);
                 hist_.push_back(lines);
                 lines = "";
@@ -175,7 +184,7 @@ int main(int argc, const char* argv[] ) {
         close(userfd[1]);
 
         dup2(assisfd[1], STDOUT_FILENO);
-        //dup2(userfd[1], STDIN_FILENO);
+        dup2(userfd[0], STDIN_FILENO);
         execlp("/usr/bin/make", "make",  "-f", argv[1], "--no-print-directory", nullptr);
     }
     return 0;
