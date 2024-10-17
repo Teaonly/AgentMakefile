@@ -52,21 +52,25 @@ export SYSTEM_MESSAGE
 .SILENT: QA
 QA: 
 	echo "客户您好，我是云锦微在线客服阿锦，关于云锦OS的产品和技术问题，您可以提问！"
-	$(READ) "=> " $(_DIR_)/u.txt
+	echo "|=>"
+	$(READ) $(_DIR_)/u.txt
 	echo "$$SYSTEM_MESSAGE" > $(_DIR_)/h.json
 	$(CHAT) $(_DIR_)/h.json $(_DIR_)/h.json
+	echo "(=>"
 	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json
 	cat $(_DIR_)/a.txt
-	printf "\n"
+	echo ")=>"
 	@$(MAKE) -f Makefile.customer  QA_CONT
 
 .PHONY: QA_CONT
 .SILENT: QA_CONT
 QA_CONT: 
-	$(READ) "=> " $(_DIR_)/u.txt
+	echo "|=>"
+	$(READ) $(_DIR_)/u.txt
+	echo "(=>"
 	$(CHAT) $(_DIR_)/h.json $(_DIR_)/u.txt $(_DIR_)/a.txt $(_DIR_)/h.json
 	cat $(_DIR_)/a.txt
-	printf "\n"
+	echo ")=>"
 	@$(MAKE) -f Makefile.customer  QA_CONT
 
 .PHONY: clean
